@@ -59,3 +59,8 @@ output "redis_configuration" {
   value       = azurerm_redis_cache.redis.redis_configuration
   description = "Redis configuration"
 }
+
+output "monitor_metric_alerts" {
+  description = "List Azure Monitor Metric Alert resources for the Redis Cache"
+  value       = azurerm_monitor_metric_alert.redis
+}
