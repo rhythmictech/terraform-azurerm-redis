@@ -42,3 +42,36 @@ resource "azurerm_storage_account" "redis_storage" {
 
   tags = merge(local.default_tags, var.extra_tags)
 }
+
+########################################
+# Monitoring
+########################################
+resource "azurerm_monitor_metric_alert" "redis" {
+  for_each            = var.monitor_metric_alert_criteria
+  name                = "${local.name}-${upper(each.key)}"
+  resource_group_name = var.resource_group_name
+  scopes              = [azurerm_redis_cache.redis.id]
+  tags                = merge(local.default_tags, var.extra_tags)
+
+  action {
+    action_group_id = var.monitor_action_group_id
+  }
+
+  # see https://docs.microsoft.com/en-us/azure/azure-monitor/platform/metrics-supported
+  criteria {
+    aggregation      = each.value.aggregation
+    metric_namespace = "Microsoft.Cache/redis"
+    metric_name      = each.value.metric_name
+    operator         = each.value.operator
+    threshold        = each.value.threshold
+
+    dynamic "dimension" {
+      for_each = each.value.dimension
+      content {
+        name     = dimension.value.name
+        operator = dimension.value.operator
+        values   = dimension.value.values
+      }
+    }
+  }
+}
