@@ -7,6 +7,7 @@ resource "azurerm_redis_cache" "redis" {
   sku_name = var.sku_name
 
   enable_non_ssl_port = var.allow_non_ssl_connections
+  minimum_tls_version = var.minimum_tls_version
   shard_count         = var.sku_name == "Premium" ? var.cluster_shard_count : 0
   capacity            = var.capacity
 
@@ -26,6 +27,10 @@ resource "azurerm_redis_cache" "redis" {
     rdb_backup_frequency            = lookup(local.redis_config, "rdb_backup_frequency", null)
     rdb_backup_max_snapshot_count   = lookup(local.redis_config, "rdb_backup_max_snapshot_count", null)
     rdb_storage_connection_string   = lookup(local.redis_config, "rdb_storage_connection_string", null)
+  }
+
+  lifecycle {
+    ignore_changes = [redis_configuration[0].rdb_storage_connection_string]
   }
 }
 
